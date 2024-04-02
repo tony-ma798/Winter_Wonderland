@@ -13,5 +13,69 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/build/dat.gui.min.js"></script>
     <script type="module" src="harmonograph.js"></script>
+    <script id="vertexShader" type="x-shader/x-vertex">
+        // vertexShader.vs// GLSL
+
+        float rand(vec2 n) { 
+            // 一个基于输入坐标n的伪随机数生成器
+            return fract(sin(dot(n, vec2(12.9898,4.1414))) * 43758.5453);
+        }
+        
+        float noise(vec2 p){
+            vec2 ip = floor(p);
+            vec2 u = fract(p);
+            u = u*u*(3.0-2.0*u);
+        
+            float res = mix(
+                mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
+                mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
+            return res*res;
+        }
+        float layeredNoise(vec2 p) {
+            float totalNoise = 0.0;
+            float amplitude = 1.0;
+            for(int i = 0; i < 4; i++) {
+                totalNoise += noise(p * pow(2.0, float(i))) * amplitude;
+                amplitude *= 0.5;
+            }
+            return totalNoise;
+        }
+        
+        
+
+        //en
+        // Vertex Shader - vertexShader.glsl
+        varying vec2 vUv;
+        varying float vNoise; // 将噪声值传递给片段着色器
+        uniform float time; // 假设有一个随时间变化的uniform变量来控制动画效果
+        varying vec3 vNormal;
+        
+        void main() {
+            vUv = uv;
+            vNormal = normal;
+            // 简单的噪声函数，基于顶点位置和时间
+            float noise = sin(position.x * 10.0 + time) * sin(position.y * 10.0 + time) * sin(position.z * 10.0 + time);
+            vNoise = noise;
+            // 根据噪声调整顶点位置
+            vec3 newPosition = position + normal * noise * 0.06; // 0.2控制凹凸强度
+        
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+        }
+        
+    </script>
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        // fragmentShader.fs
+        // Fragment Shader - fragmentShader.glsl
+        varying vec2 vUv;
+        varying float vNoise; // 接收来自顶点着色器的噪声值
+        
+        void main() {
+            vec3 baseColor = vec3(0.5, 0.7, 1);
+            vec3 highlightColor = vec3(1.0, 0.5, 0.7);
+            vec3 color = mix(baseColor, highlightColor, (vNoise + 1.0) * 0.5); // 根据噪声值混合颜色
+            gl_FragColor = vec4(color, 1.0); // 应用颜色
+        }
+        
+    </script> 
 </body>
 </html>
