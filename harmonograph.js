@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 
-let camera, scene, renderer, controls;
+let camera, scene, renderer;
 let snowParticles;
 let lastTime = 0;
 var spotlightPosition1 = 2;
@@ -20,12 +21,12 @@ const legControls = {
 const earControls = {
     earRotation: 0
 };
-
+let controls, orbitControls, firstPersonControls;
+let controlEnabled = { firstPerson: false }; // 初始状态使用OrbitControls
 let movePhase = false; // 是否处于移动阶段
 let rotatePhase = true; // 开始时首先进行旋转
 let moveDistance = 0; // 当前移动距离
 const moveSpeed = 1; // 移动速度
-const rotateSpeed = Math.PI; // 旋转速度
 let direction = 1; // 移动方向，1为正方向，-1为反方向
 let targetRotation = 0;
 
@@ -89,11 +90,20 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 2, 0);
-    controls.update();
+    //init OrbitControls
+    orbitControls = new OrbitControls(camera, renderer.domElement);
+    orbitControls.target.set(0, 2, 0);
+    //orbitControls.update();
+
+    //init FirstPersonControls
+    firstPersonControls = new FirstPersonControls(camera, renderer.domElement);
+    firstPersonControls.movementSpeed = 2;
+    firstPersonControls.lookSpeed = 0.03;
+    firstPersonControls.enabled = false; 
 
     var gui = new dat.GUI();
+
+    gui.add(controlEnabled, 'firstPerson').name('Enable Fly-through').onChange(updateControls);
 
     gui.add(userControls, 'noiseStrength', 0, 1).name('Noise Strength').onChange(function (value) {
         uniforms.noiseStrength.value = value;
@@ -121,6 +131,17 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
     
     animate(0); // Start the animation loop
+}
+
+function updateControls(value) {
+    // 根据用户选择启用相应的控制模式
+    if (value) {
+        orbitControls.enabled = false;
+        firstPersonControls.enabled = true;
+    } else {
+        orbitControls.enabled = true;
+        firstPersonControls.enabled = false;
+    }
 }
 
 function createBunny() {
@@ -310,7 +331,12 @@ function animate(time) {
 
     const deltaTime = (time - lastTime) / 1000;
     lastTime = time;
-    
+    //controls.update(deltaTime);
+    if (controlEnabled.firstPerson) {
+        firstPersonControls.update(0.01); // 需要一个时间步长参数
+    } else {
+        orbitControls.update();
+    }
     if (animationControls.animateBunny) {
         // Calculate the oscillation for the current frame
         const time = Date.now() * 0.0025;
