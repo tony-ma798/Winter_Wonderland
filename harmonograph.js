@@ -6,6 +6,19 @@ let camera, scene, renderer, controls;
 let snowParticles;
 let lastTime = 0;
 
+// 定义控制参数
+var userControls = {
+    noiseStrength: 0.2,
+    colorVariation: 0.5
+};
+
+// 创建uniforms对象，以便将参数传递给shader
+var uniforms = {
+    time: { value: 1.0 },
+    noiseStrength: { value: userControls.noiseStrength },
+    colorVariation: { value: userControls.colorVariation },
+    // 你可能还需要其他uniforms，例如纹理等
+};
 
 
 
@@ -42,6 +55,15 @@ function init() {
     controls.target.set(0, 2, 0);
     controls.update();
 
+    var gui = new dat.GUI();
+
+    gui.add(userControls, 'noiseStrength', 0, 1).name('Noise Strength').onChange(function (value) {
+        uniforms.noiseStrength.value = value;
+    });
+    gui.add(userControls, 'colorVariation', 0, 1).name('Color Variation').onChange(function (value) {
+        uniforms.colorVariation.value = value;
+    });
+
     addSnowEffect();
     addBall();
     
@@ -65,9 +87,7 @@ function addBall() {
     const ballMaterial = new THREE.ShaderMaterial({
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
-        uniforms: {
-            time: { value: 0.0 }
-        }});
+        uniforms: uniforms});
 
     const ball1 = new THREE.Mesh(geometry1, ballMaterial);
     const ball2 = new THREE.Mesh(geometry2, ballMaterial);
@@ -98,13 +118,13 @@ function addBall() {
     scene.add(ball5);
     scene.add(ball6);
 
-    function animate() {
-        requestAnimationFrame(animate);
+    function animateBall() {
+        requestAnimationFrame(animateBall);
         ballMaterial.uniforms.time.value += 0.01;
         renderer.render(scene, camera);
     }
 
-    animate();
+    animateBall();
 }
 
 

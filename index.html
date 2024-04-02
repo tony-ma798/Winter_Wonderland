@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/build/dat.gui.min.js"></script>
     <script type="module" src="harmonograph.js"></script>
     <script id="vertexShader" type="x-shader/x-vertex">
-        // vertexShader.vs// GLSL
+        // Perlin Noise
 
         float rand(vec2 n) { 
             // 一个基于输入坐标n的伪随机数生成器
@@ -49,6 +49,7 @@
         varying float vNoise; // 将噪声值传递给片段着色器
         uniform float time; // 假设有一个随时间变化的uniform变量来控制动画效果
         varying vec3 vNormal;
+        uniform float noiseStrength;
         
         void main() {
             vUv = uv;
@@ -57,7 +58,7 @@
             float noise = sin(position.x * 10.0 + time) * sin(position.y * 10.0 + time) * sin(position.z * 10.0 + time);
             vNoise = noise;
             // 根据噪声调整顶点位置
-            vec3 newPosition = position + normal * noise * 0.06; // 0.2控制凹凸强度
+            vec3 newPosition = position + normal * noise * noiseStrength; // 0.2控制凹凸强度
         
             gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
         }
@@ -68,11 +69,12 @@
         // Fragment Shader - fragmentShader.glsl
         varying vec2 vUv;
         varying float vNoise; // 接收来自顶点着色器的噪声值
+        uniform float colorVariation;
         
         void main() {
             vec3 baseColor = vec3(0.5, 0.7, 1);
             vec3 highlightColor = vec3(1.0, 0.5, 0.7);
-            vec3 color = mix(baseColor, highlightColor, (vNoise + 1.0) * 0.5); // 根据噪声值混合颜色
+            vec3 color = mix(baseColor, highlightColor, (vNoise + 1.0) * colorVariation); // 根据噪声值混合颜色
             gl_FragColor = vec4(color, 1.0); // 应用颜色
         }
         
