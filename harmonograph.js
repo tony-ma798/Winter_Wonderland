@@ -22,29 +22,31 @@ const legControls = {
 const earControls = {
     earRotation: 0
 };
-let orbitControls, firstPersonControls;
-let controlEnabled = { firstPerson: false }; // 初始状态使用OrbitControls
-let movePhase = false; // 是否处于移动阶段
-let rotatePhase = true; // 开始时首先进行旋转
-let moveDistance = 0; // 当前移动距离
-const moveSpeed = 1; // 移动速度
-let direction = 1; // 移动方向，1为正方向，-1为反方向
-let targetRotation = 0;
-let giftBoxes = []; // 存储所有giftbox
 
-// 定义控制参数
+let orbitControls, firstPersonControls;
+let controlEnabled = { firstPerson: false }; // Initial state uses OrbitControls
+let movePhase = false; // Whether it's in the moving phase
+let rotatePhase = true; // Rotation is performed first at the beginning
+let moveDistance = 0; // Current moving distance
+const moveSpeed = 1; // Moving speed
+let direction = 1; // Moving direction, 1 for forward, -1 for backward
+let targetRotation = 0;
+let giftBoxes = []; // Stores all gift boxes
+
+// Define control parameters
 var userControls = {
     noiseStrength: 0.1,
     colorVariation: 0.5
 };
 
-// 创建uniforms对象，以便将参数传递给shader
+// Create uniforms object to pass parameters to the shader
 var uniforms = {
     time: { value: 1.0 },
     noiseStrength: { value: userControls.noiseStrength },
     colorVariation: { value: userControls.colorVariation },
-    // 你可能还需要其他uniforms，例如纹理等
+    // You may need other uniforms as well, such as textures
 };
+
 
 
 
@@ -83,22 +85,21 @@ function init() {
     spotlight2.decay = 2; // 光照衰减
     spotlight2.distance = 200; // 光照距离
     scene.add(spotlight2);
+    
+    //Street spotlight
+    const spotlight3 = new THREE.SpotLight(0xffffff, 18); // 颜色和强度
+    spotlight3.position.set(3, 0, 8); // 设置光源位置
+    spotlight3.angle = Math.PI / 4; // 光锥角度
+    spotlight3.penumbra = 0.1; // 光锥渐变边缘的软化程度
+    spotlight3.decay = 2; // 光照衰减
+    spotlight3.distance = 100; // 光照距离
+    scene.add(spotlight3);
 
 
-    initPhysics(); // 创建一个质量为1的方块
-    //x, y, z：这些参数决定了地面中心点的位置坐标，即地面在世界空间中的具体位置。
-    //其中x调整地面在水平方向（左右）的位置，
-    //y调整地面在垂直方向（上下）的位置，z调整地面在另一个水平方向（前后）的位置。
-    //a, b, c：这些参数代表了地面碰撞体的半尺寸，用于定义地面的大小和形状。
-    //具体来说，a是地面沿着x轴方向的半宽度，决定了地面在水平方向的宽度。
-    //b是地面沿着y轴方向的半高度，通常对于地面而言这个值很小，因为地面是平的。
-    //c是地面沿着z轴方向的半深度，决定了地面在另一个水平方向的深度或长度。
-    createGround(2, 3, 0.9, 0.1, 0.1, 0.1, 0x00ff00);
-    createGround(-2.1, 3, 0.9, 0.1, 0.1, 0.1, 0x00ff00);
-
-
-    createGround(-0.4, 2.5, -1, 0.6, 1, 0.7, 0x00ff00);
-
+    initPhysics(); 
+    createGround(2, 3, 0.9, 0.1, 0.1, 0.1);
+    createGround(-2.1, 3, 0.9, 0.1, 0.1, 0.1);
+    createGround(-0.4, 2.5, -1, 0.6, 1, 0.7);
     createGround(0, 0.9, 0, 10, 0.5, 2.5);
     createGround(0, -0.1, 5, 10, 0.5, 3);
     createGround(0, -0.1, -6, 10, 0.5, 3);
@@ -115,15 +116,15 @@ function init() {
     loader.load('snow_mountain.glb', function (gltf) {
         const model2 = gltf.scene;
         model2.scale.set(0.15, 0.15, 0.15);
-        model2.position.set(4, 1.6, -1.5);
+        model2.position.set(4, 1, -1.5);
         scene.add(model2);
     }, undefined, function (error) {
         console.error('An error happened while loading the model:', error);
     });
     loader.load('low_poly_snow_island.glb', function (gltf) {
         const model3 = gltf.scene;
-        model3.scale.set(1.1, 1.1, 1.1);
-        model3.position.set(-0.3, 1.2, -1.5);
+        model3.scale.set(0.8, 0.8, 0.8);
+        model3.position.set(-0.4, 1, -1.5);
         scene.add(model3);
     }, undefined, function (error) {
         console.error('An error happened while loading the model:', error);
@@ -136,27 +137,44 @@ function init() {
     }, undefined, function (error) {
         console.error('An error happened while loading the model:', error);
     });
-    // loader.load('fir_tree_set_with_snow.glb', function (gltf) {
-    //     const model5 = gltf.scene;
-    //     model5.scale.set(10, 100, 10);
-    //     model5.position.set(3, 2, 2);
-    //     scene.add(model5);
-    // }, undefined, function (error) {
-    //     console.error('An error happened while loading the model:', error);
-    // });
     loader.load('low-poly_snow_tree.glb', function (gltf) {
         const model6 = gltf.scene;
-        model6.scale.set(0.3, 0.4, 0.3);
-        model6.position.set(3, 1.5, 3);
+        model6.scale.set(2, 3, 2);
+        model6.position.set(5, 1.5, 2);
         scene.add(model6);
     }, undefined, function (error) {
         console.error('An error happened while loading the model:', error);
     });
-    loader.load('snow_tree.glb', function (gltf) {
+    loader.load('tree_set.glb', function (gltf) {
         const model7 = gltf.scene;
-        model7.scale.set(0.001, 0.001, 0.001);
-        model7.position.set(3, 1.5, 2.5);
+        model7.scale.set(0.01, 0.01, 0.01);
+        model7.position.set(22, 0, 27);
         scene.add(model7);
+    }, undefined, function (error) {
+        console.error('An error happened while loading the model:', error);
+    });
+    loader.load('fence_low.glb', function (gltf) {
+        const model8 = gltf.scene;
+        model8.scale.set(0.2, 0.2, 0.2);
+        model8.position.set(0.2, 0, 5.5);
+        scene.add(model8);
+    }, undefined, function (error) {
+        console.error('An error happened while loading the model:', error);
+    });
+    loader.load('road_light.glb', function (gltf) {
+        const model9 = gltf.scene;
+        model9.scale.set(0.5, 0.5, 0.5);
+        model9.position.set(3, 0, 6);
+        scene.add(model9);
+    }, undefined, function (error) {
+        console.error('An error happened while loading the model:', error);
+    });
+    loader.load('christmas_lights.glb', function (gltf) {
+        const model10 = gltf.scene;
+        model10.scale.set(2, 1.8, 2);
+        model10.position.set(13, 6, 1);
+        model10.rotation.y = Math.PI / 2;
+        scene.add(model10);
     }, undefined, function (error) {
         console.error('An error happened while loading the model:', error);
     });
@@ -197,10 +215,9 @@ function init() {
         leftEar.rotation.x = value;
         rightEar.rotation.x = -value;
     });
-    // 添加按钮控制，掉落新的giftbox
+    // Add button control, drop new giftbox
     gui.add({ dropGiftBox: function() {
-        // 按下按钮时调用createBox函数创建新的giftbox
-        // 这里可以根据需要调整位置和尺寸参数
+        // adjust the position and size parameters as needed
         createBox(1, {x: Math.random() * 4 - 2, y: 10, z: Math.random() * 4 - 2}, {x: 0.05, y: 0.05, z: 0.05});
     } }, 'dropGiftBox').name('Drop Gift Box');
     gui.add({ClearGiftBoxes: removeGiftBoxes}, 'ClearGiftBoxes').name('Clear Gift Boxes');
@@ -228,7 +245,7 @@ function initPhysics() {
     physicsWorld.setGravity(new Ammo.btVector3(0, -9.81, 0));
 }
 
-function createGround(x, y, z, a, b, c, color) {
+function createGround(x, y, z, a, b, c) {
 
     // 创建地面的物理碰撞体
     const groundShape = new Ammo.btBoxShape(new Ammo.btVector3(a, b, c)); // 假设地面厚度为1，宽度和长度为50
@@ -243,15 +260,6 @@ function createGround(x, y, z, a, b, c, color) {
     const groundBody = new Ammo.btRigidBody(rbInfo);
 
     physicsWorld.addRigidBody(groundBody);
-
-    // 创建对应的可视化Mesh对象
-    const groundGeometry = new THREE.BoxGeometry(a * 2, b * 2, c * 2); // 注意，这里的尺寸是全尺寸，所以要乘以2
-    const groundMaterial = new THREE.MeshPhongMaterial({ color: color });
-    const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-    groundMesh.position.set(x, y, z);
-
-    // 将可视化Mesh对象添加到Three.js的场景中
-    scene.add(groundMesh);
 }
 
 
