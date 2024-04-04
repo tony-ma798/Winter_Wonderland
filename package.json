@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "ammo.js": "^0.0.10",
     "dat.gui": "^0.7.9",
     "gl-matrix": "^3.4.3",
     "three": "^0.163.0"
