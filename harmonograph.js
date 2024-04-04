@@ -57,7 +57,7 @@ function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf6eedc);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 10);
+    const ambientLight = new THREE.AmbientLight(0x404040, 15);
     scene.add(ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.1);
@@ -66,33 +66,39 @@ function init() {
 
     
     const targetObject = new THREE.Object3D();
-    targetObject.position.set(0, 0, 0); // 假设您想让光线斜向下照射到原点
+    targetObject.position.set(0, 0, 0); // set target
     scene.add(targetObject);
-    const spotlight = new THREE.SpotLight(0xffffff, 12); // 颜色和强度
-    spotlight.position.set(spotlightPosition1, spotlightPosition2, spotlightPosition3); // 设置光源位置
-    spotlight.angle = Math.PI / 2; // 光锥角度
-    spotlight.penumbra = 0.1; // 光锥渐变边缘的软化程度
-    spotlight.decay = 2; // 光照衰减
-    spotlight.distance = 200; // 光照距离
+    const spotlight = new THREE.SpotLight(0xffffff, 12); // color and strength
+    spotlight.position.set(spotlightPosition1, spotlightPosition2, spotlightPosition3); // postion
+    spotlight.angle = Math.PI / 2; // angle
+    spotlight.penumbra = 0.1; // soft
+    spotlight.decay = 2; // decay
+    spotlight.distance = 200; // distance
     spotlight.target = targetObject;
     scene.add(spotlight);
 
     //2nd spotlight
-    const spotlight2 = new THREE.SpotLight(0xffffff, 14); // 颜色和强度
-    spotlight2.position.set(6, 7, 0); // 设置光源位置
-    spotlight2.angle = Math.PI / 4; // 光锥角度
-    spotlight2.penumbra = 0.1; // 光锥渐变边缘的软化程度
-    spotlight2.decay = 2; // 光照衰减
-    spotlight2.distance = 200; // 光照距离
+    const spotlight2 = new THREE.SpotLight(0xffffff, 14); // color and strength
+    spotlight2.position.set(6, 7, 0); // postion
+    spotlight2.angle = Math.PI / 4; // angle
+    spotlight2.penumbra = 0.1; // soft
+    spotlight2.decay = 2; // decay
+    spotlight2.distance = 200; // distance
     scene.add(spotlight2);
     
-    //Street spotlight
-    const spotlight3 = new THREE.SpotLight(0xffffff, 18); // 颜色和强度
-    spotlight3.position.set(3, 0, 8); // 设置光源位置
-    spotlight3.angle = Math.PI / 4; // 光锥角度
-    spotlight3.penumbra = 0.1; // 光锥渐变边缘的软化程度
-    spotlight3.decay = 2; // 光照衰减
-    spotlight3.distance = 100; // 光照距离
+    //Street pointLight
+    const pointLight = new THREE.PointLight(0xffffff, 1.5, 100); // color, strength, distance
+    pointLight.position.set(3, 1.5, 6); // postion
+    scene.add(pointLight);
+
+
+    //Tree spotlight
+    const spotlight3 = new THREE.SpotLight(0xffffff, 18); // color and strength
+    spotlight3.position.set(-13, 4, 8); // postion
+    spotlight3.angle = Math.PI / 4; // angle
+    spotlight3.penumbra = 0.4; // soft
+    spotlight3.decay = 2; // decay
+    spotlight3.distance = 100; // distance
     scene.add(spotlight3);
 
 
@@ -104,6 +110,7 @@ function init() {
     createGround(0, -0.1, 5, 10, 0.5, 3);
     createGround(0, -0.1, -6, 10, 0.5, 3);
 
+    // add all models
     const loader = new GLTFLoader();
     loader.load('low_poly_winter_scene.glb', function (gltf) {
         const model1 = gltf.scene;
@@ -178,6 +185,26 @@ function init() {
     }, undefined, function (error) {
         console.error('An error happened while loading the model:', error);
     });
+    loader.load('christmas_lights_ring.glb', function (gltf) {
+        const model10 = gltf.scene;
+        model10.scale.set(28, 12, 28);
+        model10.position.set(1.6, -0.1, 1);
+        model10.rotation.y = Math.PI / 2;
+        scene.add(model10);
+    }, undefined, function (error) {
+        console.error('An error happened while loading the model:', error);
+    });
+    loader.load('christmas_tree.glb', function (gltf) {
+        const model10 = gltf.scene;
+        model10.scale.set(0.15, 0.2, 0.15);
+        model10.position.set(-7, 0, 5);
+        model10.rotation.y = Math.PI / 2;
+        scene.add(model10);
+    }, undefined, function (error) {
+        console.error('An error happened while loading the model:', error);
+    });
+
+
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -236,7 +263,7 @@ let physicsWorld;
 let rigidBodies = [];
 
 function initPhysics() {
-    // 物理世界配置
+    // physics set
     const collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
     const dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
     const overlappingPairCache = new Ammo.btDbvtBroadphase();
@@ -247,13 +274,13 @@ function initPhysics() {
 
 function createGround(x, y, z, a, b, c) {
 
-    // 创建地面的物理碰撞体
-    const groundShape = new Ammo.btBoxShape(new Ammo.btVector3(a, b, c)); // 假设地面厚度为1，宽度和长度为50
+    // ground physics
+    const groundShape = new Ammo.btBoxShape(new Ammo.btVector3(a, b, c)); 
     const groundTransform = new Ammo.btTransform();
     groundTransform.setIdentity();
     groundTransform.setOrigin(new Ammo.btVector3(x, y, z)); 
 
-    const groundMass = 0; // 静态物体质量为0
+    const groundMass = 0; // mass 0
     const localInertia = new Ammo.btVector3(0, 0, 0);
     const motionState = new Ammo.btDefaultMotionState(groundTransform);
     const rbInfo = new Ammo.btRigidBodyConstructionInfo(groundMass, motionState, groundShape, localInertia);
@@ -269,13 +296,13 @@ function createBox(mass, position, scale) {
         const model = gltf.scene;
         model.traverse(function(child) {
             if (child.isMesh) {
-                // 应用位置和缩放
+                // positions and scale
                 child.position.set(position.x, position.y, position.z);
                 child.scale.set(scale.x, scale.y, scale.z);
                 scene.add(child);
 
-                // 创建物理碰撞体
-                const shape = new Ammo.btBoxShape(new Ammo.btVector3(scale.x * 8, scale.y * 8, scale.z * 3.5)); // 假设为盒状碰撞体
+                // physics
+                const shape = new Ammo.btBoxShape(new Ammo.btVector3(scale.x * 8, scale.y * 8, scale.z * 3.5)); // box
                 const transform = new Ammo.btTransform();
                 transform.setIdentity();
                 
@@ -300,13 +327,13 @@ function createBox(mass, position, scale) {
 
 function removeGiftBoxes() {
     giftBoxes.forEach(box => {
-        scene.remove(box); // 从场景中移除
+        scene.remove(box); // remove 
         const physicsBody = box.userData.physicsBody;
         if (physicsBody) {
-            physicsWorld.removeRigidBody(physicsBody); // 从物理世界中移除
+            physicsWorld.removeRigidBody(physicsBody); // remove 
         }
     });
-    giftBoxes = []; // 清空数组
+    giftBoxes = []; // reset array
 }
 
 
@@ -333,7 +360,7 @@ function updatePhysics(deltaTime) {
 
 
 function updateControls(value) {
-    // 根据用户选择启用相应的控制模式
+    // choose different control
     if (value) {
         orbitControls.enabled = false;
         firstPersonControls.enabled = true;
@@ -416,7 +443,7 @@ function createBunny() {
 
 function addBall() {
 
-    // 创建球体几何体
+    // create balls
     const geometry1 = new THREE.SphereGeometry(0.1, 32, 32);
     const geometry2 = new THREE.SphereGeometry(0.15, 32, 32);
     const geometry3 = new THREE.SphereGeometry(0.2, 32, 32);
@@ -428,7 +455,7 @@ function addBall() {
     const fragmentShader = document.getElementById("fragmentShader").textContent;
 
     
-    // 加载Cubemap Texture
+    // load Cubemap Texture
     const loader = new THREE.CubeTextureLoader();
     loader.setPath('/Standard-Cube-Map_2/');
     const cubemapTexture = loader.load([
@@ -436,10 +463,11 @@ function addBall() {
         'py.png', 'ny.png',
         'pz.png', 'nz.png'
     ], function() {
-        scene.background = cubemapTexture; // 将加载的Cubemap纹理设置为场景背景
+        scene.background = cubemapTexture; // let cubemap texture be the background
     });
+    
 
-    // 创建太阳几何体和材质
+    // create sun texture
     const SunGeo = new THREE.SphereGeometry(0.3, 32, 32);
     const sunMaterial = new THREE.MeshStandardMaterial({
         envMap: cubemapTexture,
@@ -447,7 +475,7 @@ function addBall() {
         roughness: 0.0
     });
 
-    // 创建太阳Mesh并添加到场景
+    // create sun mesh
     const Sun = new THREE.Mesh(SunGeo, sunMaterial);
     Sun.scale.set(3, 3, 3);
     Sun.position.set(2, 4.5, 0);
@@ -473,7 +501,7 @@ function addBall() {
     ball5.scale.set(1.2, 1, 1);
     ball6.scale.set(2, 1, 1);
 
-    // 设置球体的位置
+    // set balls positions
     ball1.position.set(0.02, 3.9, -2.1);
     ball2.position.set(0.06, 4.1, -2.1);
     ball3.position.set(0.2, 4.3, -2.2);
@@ -481,7 +509,7 @@ function addBall() {
     ball5.position.set(0.47, 4.6, -2.35);
     ball6.position.set(0.5, 4.7, -2.35);
 
-    // 将球体添加到场景中
+    // add balls to the scene
     scene.add(ball1);
     scene.add(ball2);
     scene.add(ball3);
@@ -530,8 +558,8 @@ function animateSnow(deltaTime) {
 
         if (positions[i] < -10) {
             positions[i] += 60; // Ensure snowflakes reappear above the scene
-            positions[i] = Math.random() * 40 - 20; // 随机X轴位置
-            positions[i + 2] = Math.random() * 40 - 20; // 随机Z轴位置
+            positions[i] = Math.random() * 40 - 20; // randon x
+            positions[i + 2] = Math.random() * 40 - 20; // random z
         
         }
     }
@@ -555,7 +583,7 @@ function animate(time) {
     updatePhysics(deltaTime);
     //controls.update(deltaTime);
     if (controlEnabled.firstPerson) {
-        firstPersonControls.update(0.01); // 需要一个时间步长参数
+        firstPersonControls.update(0.01); // need a time long
     } else {
         orbitControls.update();
     }
@@ -573,27 +601,27 @@ function animate(time) {
         rightEar.rotation.x = -Math.sin(time * speed * 2) * (amplitude / 2);
         if (bunny) {
 
-        // 限制Bunny的位置在定义的范围内
+        // limit bunny pistion
         bunny.position.x = Math.max(moveBounds.minX, Math.min(moveBounds.maxX, bunny.position.x));
             if (rotatePhase) {
-                // 检查是否达到目标旋转角度
+                // check angle
                 if ((direction === 1 && bunny.rotation.y >= targetRotation) ||
                     (direction === -1 && bunny.rotation.y <= targetRotation) ) {
-                    bunny.rotation.y = targetRotation; // 完成旋转
-                    rotatePhase = false; // 结束旋转阶段
-                    movePhase = true; // 开始移动阶段
-                    // 计算下一次旋转的目标角度，以便在下一次改变方向时使用
-                    targetRotation += direction * Math.PI; // 预设下次旋转180度
+                    bunny.rotation.y = targetRotation; // rotation
+                    rotatePhase = false; // finish rotation
+                    movePhase = true; // start move
+                    // calculate angle fo rnext time
+                    targetRotation += direction * Math.PI; // 180 degree
                 }
             } else if (movePhase) {
                 moveDistance += moveSpeed * deltaTime * direction;
                 bunny.position.x += moveSpeed * deltaTime * direction;
-                // 判断是否达到改变方向的条件
+                // judge need rotation or not
                 if (Math.abs(moveDistance) >= 5) {
-                    moveDistance = 0; // 重置移动距离
-                    movePhase = false; // 结束移动阶段
-                    rotatePhase = true; // 开始新的旋转阶段
-                    direction *= -1; // 改变移动方向
+                    moveDistance = 0; // reset move distance
+                    movePhase = false; // finish movement
+                    rotatePhase = true; // start new condition
+                    direction *= -1; // change toward
                 }
             }
             

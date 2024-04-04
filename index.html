@@ -7,9 +7,25 @@
     <style>
         body { margin: 0; }
         canvas { display: block; }
+        #instructions {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            text-align: center;
+            color: rgb(145, 1, 255);
+            font-size: large;
+            font-family: Roboto, sans-serif;
+            padding: 20px 0;
+        }
     </style>
 </head>
 <body>
+    <div id="instructions">
+        Fly-Through Mod<br>
+        (left click: forward, right click: backward)
+    </div>
+    
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.9/build/dat.gui.min.js"></script>
     <script type="module" src="harmonograph.js"></script>
